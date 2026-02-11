@@ -1,0 +1,785 @@
+---
+title: "Untitled"
+format: html
+editor: visual
+---
+
+```{r}
+thyroid_data <- read.csv("C:/Users/prach/OneDrive/Desktop/Spring 2025/Predictive Analytics/Pred Project/thyroid_cancer_risk_data.csv")
+
+dim(thyroid_data)
+str(thyroid_data)
+summary(thyroid_data)
+```
+
+```{r}
+# Check unique values for categorical variables
+sapply(thyroid_data, function(x) if(is.factor(x) || is.character(x)) unique(x))
+```
+
+```{r}
+##PART 1 EDA
+
+# Create AgeGroup column
+thyroid_data$AgeGroup <- cut(thyroid_data$Age,
+                             breaks = c(0, 29, 50, Inf),
+                             labels = c("Early", "Mid", "Late"),
+                             right = TRUE)
+
+table(thyroid_data$AgeGroup)
+```
+
+```{r}
+##Diagnosis Split
+table(thyroid_data$Diagnosis)
+prop.table(table(thyroid_data$Diagnosis)) * 100
+```
+
+```{r}
+##Age Split
+table(thyroid_data$AgeGroup, thyroid_data$Diagnosis)
+prop.table(table(thyroid_data$AgeGroup, thyroid_data$Diagnosis), margin = 1) * 100
+```
+
+```{r}
+##Gender + Age
+table(thyroid_data$Gender, thyroid_data$AgeGroup, thyroid_data$Diagnosis)
+```
+
+```{r}
+##Bar Plot by Age Group and Gender
+library(ggplot2)
+
+ggplot(thyroid_data, aes(x = AgeGroup, fill = Diagnosis)) +
+  geom_bar(position = "fill") +
+  facet_wrap(~Gender) +
+  scale_y_continuous(labels = scales::percent) +
+  labs(title = "Diagnosis Rate by Age Group and Gender",
+       y = "Proportion", x = "Age Group")
+```
+
+```{r}
+##Part 2 EDA
+
+# Table of Diagnosis vs Smoking
+table(thyroid_data$Smoking, thyroid_data$Diagnosis)
+prop.table(table(thyroid_data$Smoking, thyroid_data$Diagnosis), margin = 1) * 100
+
+# Bar Plot
+ggplot(thyroid_data, aes(x = Smoking, fill = Diagnosis)) +
+  geom_bar(position = "fill") +
+  scale_y_continuous(labels = scales::percent) +
+  labs(title = "Diagnosis Rate by Smoking", y = "Proportion")
+```
+
+```{r}
+# Table of Diagnosis vs Obesity
+
+table(thyroid_data$Obesity, thyroid_data$Diagnosis)
+prop.table(table(thyroid_data$Obesity, thyroid_data$Diagnosis), margin = 1) * 100
+
+ggplot(thyroid_data, aes(x = Obesity, fill = Diagnosis)) +
+  geom_bar(position = "fill") +
+  scale_y_continuous(labels = scales::percent) +
+  labs(title = "Diagnosis Rate by Obesity", y = "Proportion")
+```
+
+```{r}
+##Table of Diagnosis and Radiation Exposure
+
+table(thyroid_data$Radiation_Exposure, thyroid_data$Diagnosis)
+prop.table(table(thyroid_data$Radiation_Exposure, thyroid_data$Diagnosis), margin = 1) * 100
+
+ggplot(thyroid_data, aes(x = Radiation_Exposure, fill = Diagnosis)) +
+  geom_bar(position = "fill") +
+  scale_y_continuous(labels = scales::percent) +
+  labs(title = "Diagnosis Rate by Radiation Exposure", y = "Proportion")
+
+```
+
+```{r}
+##Table of Diagnosis and Diabetes
+
+table(thyroid_data$Diabetes, thyroid_data$Diagnosis)
+prop.table(table(thyroid_data$Diabetes, thyroid_data$Diagnosis), margin = 1) * 100
+
+ggplot(thyroid_data, aes(x = Diabetes, fill = Diagnosis)) +
+  geom_bar(position = "fill") +
+  scale_y_continuous(labels = scales::percent) +
+  labs(title = "Diagnosis Rate by Diabetes", y = "Proportion")
+
+```
+
+```{r}
+##Table of Diagnosis and Iodine Deficiency
+
+table(thyroid_data$Iodine_Deficiency, thyroid_data$Diagnosis)
+prop.table(table(thyroid_data$Iodine_Deficiency, thyroid_data$Diagnosis), margin = 1) * 100
+
+ggplot(thyroid_data, aes(x = Iodine_Deficiency, fill = Diagnosis)) +
+  geom_bar(position = "fill") +
+  scale_y_continuous(labels = scales::percent) +
+  labs(title = "Diagnosis Rate by Iodine Deficiency", y = "Proportion")
+
+```
+
+```{r}
+##Part 3 EDA
+
+#Family History vs Diagnosis
+table(thyroid_data$Family_History, thyroid_data$Diagnosis)
+prop.table(table(thyroid_data$Family_History, thyroid_data$Diagnosis), margin = 1) * 100
+
+ggplot(thyroid_data, aes(x = Family_History, fill = Diagnosis)) +
+  geom_bar(position = "fill") +
+  scale_y_continuous(labels = scales::percent) +
+  labs(title = "Diagnosis Rate by Family History", y = "Proportion")
+
+```
+
+```{r}
+##Gender and Diagnosis
+
+table(thyroid_data$Gender, thyroid_data$Diagnosis)
+prop.table(table(thyroid_data$Gender, thyroid_data$Diagnosis), margin = 1) * 100
+
+ggplot(thyroid_data, aes(x = Gender, fill = Diagnosis)) +
+  geom_bar(position = "fill") +
+  scale_y_continuous(labels = scales::percent) +
+  labs(title = "Diagnosis Rate by Gender", y = "Proportion")
+
+```
+
+```{r}
+##Age Group and diagnosis
+
+thyroid_data$Age_Group <- cut(thyroid_data$Age, breaks = c(0, 30, 45, 60, 100),
+                               labels = c("≤30", "31–45", "46–60", "60+"))
+
+ggplot(thyroid_data, aes(x = Age_Group, fill = Diagnosis)) +
+  geom_bar(position = "fill") +
+  scale_y_continuous(labels = scales::percent) +
+  labs(title = "Diagnosis Rate by Age Group", y = "Proportion")
+
+```
+
+```{r}
+##Chi-square test of Independence
+
+chisq.test(table(thyroid_data$Smoking, thyroid_data$Diagnosis))
+chisq.test(table(thyroid_data$Radiation_Exposure, thyroid_data$Diagnosis))
+chisq.test(table(thyroid_data$Iodine_Deficiency, thyroid_data$Diagnosis))
+chisq.test(table(thyroid_data$Obesity, thyroid_data$Diagnosis))
+chisq.test(table(thyroid_data$Diabetes, thyroid_data$Diagnosis))
+chisq.test(table(thyroid_data$Family_History, thyroid_data$Diagnosis))
+chisq.test(table(thyroid_data$Gender, thyroid_data$Diagnosis))
+
+```
+
+```{r}
+##Binary convert
+
+thyroid_data$Diagnosis_Binary <- ifelse(thyroid_data$Diagnosis == "Malignant", 1, 0)
+
+##GLM model: categorical var
+
+model <- glm(Diagnosis_Binary ~ Smoking + Obesity + Radiation_Exposure + Iodine_Deficiency + Diabetes + Gender + Family_History + Age_Group,
+             data = thyroid_data, family = binomial)
+
+summary(model)
+
+
+```
+
+```{r}
+##GLM model: Numerical var
+
+model2 <- glm(Diagnosis_Binary ~ Smoking + Obesity + Radiation_Exposure + 
+              Iodine_Deficiency + Diabetes + Gender + Family_History + 
+              Age_Group + TSH_Level + T3_Level + T4_Level + Nodule_Size,
+              data = thyroid_data, family = binomial)
+
+summary(model2)
+```
+
+```{r}
+##Non-linear transformations
+
+# Set threshold at 75th percentile
+threshold <- quantile(thyroid_data$TSH_Level, 0.75, na.rm = TRUE)
+
+# Create high TSH variable
+thyroid_data$High_TSH <- ifelse(thyroid_data$TSH_Level > threshold, 1, 0)
+
+# Set threshold at 75th percentile
+threshold_3 <- quantile(thyroid_data$T3_Level, 0.75, na.rm = TRUE)
+
+# Create high TSH variable
+thyroid_data$High_T3 <- ifelse(thyroid_data$T3_Level > threshold_3, 1, 0)
+
+
+# Set threshold at 75th percentile
+threshold_4 <- quantile(thyroid_data$T4_Level, 0.75, na.rm = TRUE)
+
+# Create high TSH variable
+thyroid_data$High_T4 <- ifelse(thyroid_data$T4_Level > threshold_4, 1, 0)
+
+
+# Set threshold at 75th percentile
+threshold_N <- quantile(thyroid_data$Nodule_Size, 0.75, na.rm = TRUE)
+
+# Create high TSH variable
+thyroid_data$Large_Nodule <- ifelse(thyroid_data$Nodule_Size > threshold_N, 1, 0)
+
+
+
+##GLM model
+
+model3 <- glm(Diagnosis_Binary ~ Smoking + Obesity + Radiation_Exposure +
+              Iodine_Deficiency + Diabetes + Gender + Family_History +
+              Age_Group + High_TSH + High_T3 + High_T4 + Large_Nodule,
+              data = thyroid_data, family = "binomial")
+
+
+summary(model3)
+
+```
+
+```{r}
+library(caret)
+
+# Split data into training (80%) and testing (20%)
+set.seed(123)
+
+trainIndex <- createDataPartition(thyroid_data$Diagnosis_Binary, p = 0.8, list = FALSE)
+trainData <- thyroid_data[trainIndex, ]
+testData <- thyroid_data[-trainIndex, ]
+
+# Train model on training data
+model_final <- glm(Diagnosis_Binary ~ Smoking + Obesity + Radiation_Exposure +
+                   Iodine_Deficiency + Diabetes + Gender + Family_History +
+                   Age_Group + High_TSH + High_T3 + High_T4 + Large_Nodule,
+                   data = trainData, family = "binomial")
+summary(model_final)
+```
+
+```{r}
+# Predict on test data
+testData$pred_prob <- predict(model_final, newdata = testData, type = "response")
+testData$pred_class <- ifelse(testData$pred_prob > 0.5, 1, 0)
+
+# Confusion Matrix
+
+confusionMatrix(as.factor(testData$pred_class), as.factor(testData$Diagnosis_Binary))
+```
+
+```{r}
+library(randomForest)
+
+set.seed(123)
+
+# Convert the target to factor for classification
+trainData$Diagnosis_Binary <- as.factor(trainData$Diagnosis_Binary)
+testData$Diagnosis_Binary <- as.factor(testData$Diagnosis_Binary)
+
+# Train random forest model
+rf_model <- randomForest(Diagnosis_Binary ~ Smoking + Obesity + Radiation_Exposure +
+                         Iodine_Deficiency + Diabetes + Gender + Family_History +
+                         Age_Group + High_TSH + High_T3 + High_T4 + Large_Nodule,
+                         data = trainData,
+                         ntree = 500, 
+                         mtry = 4, 
+                         importance = TRUE)
+
+# Predict on test set
+rf_pred <- predict(rf_model, newdata = testData)
+
+# Confusion matrix
+confusionMatrix(rf_pred, testData$Diagnosis_Binary)
+
+# Variable importance
+varImpPlot(rf_model)
+
+```
+
+```{r}
+summary(thyroid_data)
+```
+
+```{r}
+# Check unique levels
+unique(thyroid_data$Thyroid_Cancer_Risk)
+
+# Frequency table
+table(thyroid_data$Thyroid_Cancer_Risk)
+
+# Visualize distribution
+library(ggplot2)
+ggplot(thyroid_data, aes(x = Thyroid_Cancer_Risk)) +
+  geom_bar(fill = "steelblue") +
+  theme_minimal() +
+  labs(title = "Distribution of Thyroid Cancer Risk",
+       x = "Risk Level", y = "Count")
+
+```
+
+```{r}
+##Check risk level based on Age Group
+
+# AgeGroup vs Risk
+ggplot(thyroid_data, aes(x = AgeGroup, fill = Thyroid_Cancer_Risk)) +
+  geom_bar(position = "fill") +  # Proportions
+  scale_y_continuous(labels = scales::percent) +
+  theme_minimal() +
+  labs(title = "Proportion of Thyroid Cancer Risk by Age Group",
+       x = "Age Group", y = "Proportion", fill = "Cancer Risk")
+
+```
+
+```{r}
+##Relationship with key predictors
+
+# TSH_Level by Risk
+ggplot(thyroid_data, aes(x = Thyroid_Cancer_Risk, y = TSH_Level, fill = Thyroid_Cancer_Risk)) +
+  geom_boxplot() +
+  theme_minimal() +
+  labs(title = "TSH Level Across Thyroid Cancer Risk Levels",
+       x = "Cancer Risk", y = "TSH Level")
+
+```
+
+```{r}
+
+# T3_Level by Risk
+ggplot(thyroid_data, aes(x = Thyroid_Cancer_Risk, y = T3_Level, fill = Thyroid_Cancer_Risk)) +
+  geom_boxplot() +
+  theme_minimal() +
+  labs(title = "T3 Level Across Thyroid Cancer Risk Levels",
+       x = "Cancer Risk", y = "T3 Level")
+
+```
+
+```{r}
+
+# T4_Level by Risk
+ggplot(thyroid_data, aes(x = Thyroid_Cancer_Risk, y = T4_Level, fill = Thyroid_Cancer_Risk)) +
+  geom_boxplot() +
+  theme_minimal() +
+  labs(title = "T4 Level Across Thyroid Cancer Risk Levels",
+       x = "Cancer Risk", y = "T4 Level")
+```
+
+```{r}
+
+# Nodule Size by Risk
+ggplot(thyroid_data, aes(x = Thyroid_Cancer_Risk, y = Nodule_Size, fill = Thyroid_Cancer_Risk)) +
+  geom_boxplot() +
+  theme_minimal() +
+  labs(title = "Nodule Size Across Thyroid Cancer Risk Levels",
+       x = "Cancer Risk", y = "Nodule Size")
+```
+
+```{r}
+##convert to ordered factor
+thyroid_data$Thyroid_Cancer_Risk <- factor(thyroid_data$Thyroid_Cancer_Risk, 
+                                   levels = c("Low", "Medium", "High"), 
+                                   ordered = TRUE)
+
+# Use pairwise plots or correlation heatmaps
+install.packages("GGally")
+library(GGally)
+
+# Only select numerical variables
+##Check Multivariate Relationships
+
+numerics <- thyroid_data[, c("TSH_Level", "T3_Level", "T4_Level", "Nodule_Size")]
+GGally::ggpairs(numerics, aes(color = thyroid_data$Thyroid_Cancer_Risk))
+
+
+```
+
+```{r}
+# Convert response to factor
+thyroid_data$Thyroid_Cancer_Risk <- as.factor(thyroid_data$Thyroid_Cancer_Risk)
+
+# Split data
+set.seed(123)
+index <- sample(1:nrow(thyroid_data), 0.7 * nrow(thyroid_data))
+train <- thyroid_data[index, ]
+test <- thyroid_data[-index, ]
+
+# Train model
+rf_model1 <- randomForest(Thyroid_Cancer_Risk ~ TSH_Level + T3_Level + T4_Level + 
+                         Nodule_Size + Age + Obesity + Smoking + Radiation_Exposure + 
+                         Iodine_Deficiency + Family_History + Diabetes,
+                         data = train, importance = TRUE, ntree = 100)
+
+# Predict
+pred <- predict(rf_model1, newdata = test)
+
+# Evaluate
+confusionMatrix(pred, test$Thyroid_Cancer_Risk)
+```
+
+```{r}
+varImpPlot(rf_model1)
+```
+
+```{r}
+install.packages("nnet")
+library(nnet)
+
+
+# Convert target variable to factor
+thyroid_data$Thyroid_Cancer_Risk <- as.factor(thyroid_data$Thyroid_Cancer_Risk)
+
+# Fit the model using all variables
+model4 <- multinom(Thyroid_Cancer_Risk ~ TSH_Level + T3_Level + T4_Level + 
+                  Nodule_Size + Age + Radiation_Exposure + Obesity +
+                  Iodine_Deficiency + Diabetes + Smoking + Family_History,
+                  data = thyroid_data)
+
+summary(model4)
+```
+
+```{r}
+# Predict classes
+pred1 <- predict(model4, newdata = thyroid_data)
+
+# Convert both to the same kind of factor (unordered)
+actual <- factor(thyroid_data$Thyroid_Cancer_Risk, ordered = FALSE)
+pred2 <- factor(pred1, levels = levels(actual), ordered = FALSE)
+
+# Now calculate accuracy
+accuracy <- mean(pred2 == actual)
+accuracy
+
+library (caret)
+
+confusionMatrix(pred2, actual)
+```
+
+```{r}
+##Check Coefficients and Significance:
+z <- summary(model4)$coefficients / summary(model4)$standard.errors
+p_values <- (1 - pnorm(abs(z), 0, 1)) * 2
+print(p_values)
+
+```
+
+```{r}
+# Example for multi-class (adapt to your data)
+low_data <- thyroid_data[thyroid_data$Thyroid_Cancer_Risk == "Low", ]
+medium_data <- thyroid_data[thyroid_data$Thyroid_Cancer_Risk == "Medium", ]
+high_data <- thyroid_data[thyroid_data$Thyroid_Cancer_Risk == "High", ]
+
+##checking the Diagnosis_binary
+
+sum(is.na(thyroid_data$Diagnosis_Binary))
+
+########################################################3
+# Separate data by Diagnosis_Binary
+benign_data <- thyroid_data[thyroid_data$Diagnosis_Binary == 0, ]
+malignant_data <- thyroid_data[thyroid_data$Diagnosis_Binary == 1, ]
+
+# Determine the smaller class size
+min_binary_size <- min(nrow(benign_data), nrow(malignant_data))
+
+# Undersample the majority class
+if (nrow(benign_data) > nrow(malignant_data)) {
+  undersampled_benign <- benign_data[sample(nrow(benign_data), min_binary_size, replace = FALSE), ]
+  balanced_data_binary <- rbind(undersampled_benign, malignant_data)
+} else if (nrow(malignant_data) > nrow(benign_data)) {
+  undersampled_malignant <- malignant_data[sample(nrow(malignant_data), min_binary_size, replace = FALSE), ]
+  balanced_data_binary <- rbind(benign_data, undersampled_malignant)
+} else {
+  # Classes are already balanced
+  balanced_data_binary <- rbind(benign_data, malignant_data)
+}
+
+# Removing the Patient ID
+balanced_data_binary <- balanced_data_binary[, !names(balanced_data_binary) %in% "Patient_ID"]
+
+# Display the balance
+print("Balance of Diagnosis_Binary in balanced_data_binary:")
+print(table(balanced_data_binary$Diagnosis_Binary))
+```
+
+```{r}
+# Rename the balanced dataset for binary to avoid confusion
+balanced_data <- balanced_data_binary
+
+summary(balanced_data)
+str(balanced_data)
+
+sum(is.na(balanced_data))
+```
+
+```{r}
+# Run the binary logistic regression model
+binary_logistic_balanced <- glm(Diagnosis_Binary ~ ., data = balanced_data, family = "binomial")
+summary(binary_logistic_balanced)
+
+
+print(colnames(balanced_data))  # Patient_ID should NOT be here
+print(table(balanced_data$Diagnosis_Binary)) # Should show balanced counts
+print(sum(is.na(balanced_data$Diagnosis_Binary))) # Should show 0 or a very small number
+```
+
+```{r}
+# Run the binary logistic regression model
+binary_logistic_balanced <- glm(Diagnosis_Binary ~ . - AgeGroup - Age_Group -TSH_Level -T3_Level -T4_Level -Nodule_Size -Diagnosis, data = balanced_data, family = "binomial") #Excluding Age Groups and original numeric variables for consistency
+summary(binary_logistic_balanced)
+```
+
+```{r}
+# Generate predictions and confusion matrix
+# Generate predictions on the balanced data
+binary_predictions_balanced_prob <- predict(binary_logistic_balanced, newdata = balanced_data, type = "response")
+
+# Convert probabilities to class predictions (assuming 0.5 as the threshold)
+binary_predictions_balanced_class <- ifelse(binary_predictions_balanced_prob > 0.5, 1, 0)
+
+# Ensure that the predictions and the true values are factors with the same levels
+balanced_data$Diagnosis_Binary <- as.factor(balanced_data$Diagnosis_Binary)
+binary_predictions_balanced_factor <- factor(binary_predictions_balanced_class, levels = levels(balanced_data$Diagnosis_Binary))
+
+# Create the confusion matrix
+cm_binary_balanced <- confusionMatrix(binary_predictions_balanced_factor, balanced_data$Diagnosis_Binary)
+print(cm_binary_balanced)
+```
+
+```{r}
+
+###don't bother#############################3333333
+numeric_predictors <- names(balanced_data)[sapply(balanced_data, is.numeric) & !names(balanced_data) %in% "Diagnosis_Binary"]
+print(numeric_predictors)
+
+
+if (length(numeric_predictors) > 1) { # Only calculate if there's more than one numeric predictor
+    cor_matrix <- cor(balanced_data[, numeric_predictors])
+    print(cor_matrix)
+} else {
+    print("Only one numeric predictor, correlation matrix not calculated.")
+}
+
+
+if (length(numeric_predictors) > 0) {
+    cor_with_target <- sapply(balanced_data[, numeric_predictors], function(x) cor(x, as.numeric(balanced_data$Diagnosis_Binary)))
+    print(cor_with_target)
+}
+#########################################################3
+```
+
+```{r}
+
+categorical_predictors <- names(balanced_data)[sapply(balanced_data, is.factor) & !names(balanced_data) %in% "Diagnosis_Binary"]
+print(categorical_predictors)
+```
+
+```{r}
+# For multinomial logistic regression
+
+multinom_balanced <- multinom(Thyroid_Cancer_Risk ~ . - AgeGroup - Age_Group -TSH_Level -T3_Level -T4_Level -Nodule_Size -Diagnosis, data = balanced_data)
+
+summary(multinom_balanced)
+```
+
+```{r}
+# Generate predictions for multinom_balanced
+multinom_predictions_prob <- predict(multinom_balanced, newdata = balanced_data, type = "probs")
+
+# Convert probabilities to class predictions (find the class with the highest probability)
+multinom_predictions_class <- apply(multinom_predictions_prob, 1, which.max)
+
+# Convert class indices to actual class labels
+multinom_predictions_labels <- levels(balanced_data$Thyroid_Cancer_Risk)[multinom_predictions_class]
+
+# Ensure both predictions and true values are factors with consistent levels
+balanced_data$Thyroid_Cancer_Risk <- as.factor(as.character(balanced_data$Thyroid_Cancer_Risk))
+multinom_predictions_factor <- factor(multinom_predictions_labels, levels = levels(balanced_data$Thyroid_Cancer_Risk))
+
+# Create the confusion matrix
+cm_multinom <- confusionMatrix(multinom_predictions_factor, balanced_data$Thyroid_Cancer_Risk)
+
+# Print the confusion matrix
+print(cm_multinom)
+```
+
+```{r}
+# 1. Fit the Random Forest Model
+rf_model2 <- randomForest(
+  Diagnosis_Binary ~ . - AgeGroup - Age_Group -TSH_Level -T3_Level -T4_Level -Nodule_Size -Diagnosis, 
+  data = balanced_data,
+  ntree = 100, # Reduced trees for simplicity
+  importance = TRUE
+)
+
+# 2. Make Predictions
+rf_predictions <- predict(rf_model2, newdata = balanced_data)
+
+# 3. Confusion Matrix
+conf_matrix <- confusionMatrix(
+  rf_predictions, 
+  balanced_data$Diagnosis_Binary
+)
+
+# 4. Print Results
+print(conf_matrix)
+
+# 5. Feature Importance (Simplified)
+print(importance(rf_model2))
+```
+
+```{r}
+# Extract all hypothesis test results for Tableau
+hypothesis_results <- data.frame(
+  Test_Type = character(),
+  Variable = character(),
+  Test_Statistic = numeric(),
+  P_Value = numeric(),
+  stringsAsFactors = FALSE
+)
+
+# Add Chi-square tests
+chi_vars <- c("Smoking", "Radiation_Exposure", "Iodine_Deficiency", 
+              "Obesity", "Diabetes", "Family_History", "Gender")
+
+for (var in chi_vars) {
+  test <- chisq.test(thyroid_data[[var]], thyroid_data$Diagnosis)
+  hypothesis_results <- rbind(hypothesis_results, data.frame(
+    Test_Type = "Chi-Square",
+    Variable = var,
+    Test_Statistic = test$statistic,
+    P_Value = test$p.value
+  ))
+}
+
+# Add t-tests for numerical variables
+num_vars <- c("TSH_Level", "T3_Level", "T4_Level", "Nodule_Size")
+
+for (var in num_vars) {
+  benign_data <- thyroid_data[[var]][thyroid_data$Diagnosis == "Benign"]
+  malignant_data <- thyroid_data[[var]][thyroid_data$Diagnosis == "Malignant"]
+  test <- t.test(benign_data, malignant_data)
+  hypothesis_results <- rbind(hypothesis_results, data.frame(
+    Test_Type = "T-Test",
+    Variable = var,
+    Test_Statistic = test$statistic,
+    P_Value = test$p.value
+  ))
+}
+
+write.csv(hypothesis_results, "hypothesis_test_results.csv", row.names = FALSE)
+```
+
+```{r}
+# Extract coefficients from all logistic regression models
+extract_logistic_coefficients <- function(model, model_name) {
+  if (!is.null(model)) {
+    coeff_summary <- summary(model)$coefficients
+    coeff_df <- data.frame(
+      Model = model_name,
+      Variable = rownames(coeff_summary),
+      Coefficient = coeff_summary[, 1],
+      Std_Error = coeff_summary[, 2],
+      Z_Value = coeff_summary[, 3],
+      P_Value = coeff_summary[, 4],
+      stringsAsFactors = FALSE
+    )
+    return(coeff_df)
+  }
+}
+
+# Apply to all your models
+all_coeffs <- rbind(
+  extract_logistic_coefficients(model, "Binary_Logistic"),
+  extract_logistic_coefficients(model2, "With_Numerical"),
+  extract_logistic_coefficients(model3, "With_Binary_Transform"),
+  extract_logistic_coefficients(model_final, "Final_Model")
+)
+
+write.csv(all_coeffs, "logistic_regression_coefficients.csv", row.names = FALSE)
+```
+
+```{r}
+# Create a comprehensive confusion matrix dataset
+confusion_matrix_data <- data.frame(
+  Model_Type = character(),
+  Data_Type = character(),
+  Phase = character(),
+  Actual = character(),
+  Predicted = character(),
+  Count = numeric(),
+  stringsAsFactors = FALSE
+)
+
+# 1. Extract from your FINAL LOGISTIC MODEL (Model 4 - Testing)
+if(exists("cm_test")) {
+  cm_df <- as.data.frame(cm_test$table)
+  colnames(cm_df) <- c("Predicted", "Actual", "Count")
+  cm_df$Model_Type <- "Logistic_Regression"
+  cm_df$Data_Type <- "Testing"
+  cm_df$Phase <- "Final_Model"
+  confusion_matrix_data <- rbind(confusion_matrix_data, cm_df)
+}
+
+# 2. Extract from RANDOM FOREST (Imbalanced)
+if(exists("cm_rf")) {
+  cm_rf_df <- as.data.frame(cm_rf$table)
+  colnames(cm_rf_df) <- c("Predicted", "Actual", "Count")
+  cm_rf_df$Model_Type <- "Random_Forest"
+  cm_rf_df$Data_Type <- "Testing"
+  cm_rf_df$Phase <- "Imbalanced"
+  confusion_matrix_data <- rbind(confusion_matrix_data, cm_rf_df)
+}
+
+# 3. Extract from BALANCED DATA MODELS
+# Balanced Logistic Regression
+if(exists("conf_matrix_bal")) {
+  cm_bal_log_df <- as.data.frame(conf_matrix_bal)
+  colnames(cm_bal_log_df) <- c("Actual", "Predicted", "Count")
+  cm_bal_log_df$Model_Type <- "Logistic_Regression"
+  cm_bal_log_df$Data_Type <- "Testing"
+  cm_bal_log_df$Phase <- "Balanced"
+  confusion_matrix_data <- rbind(confusion_matrix_data, cm_bal_log_df)
+}
+
+# Balanced Random Forest
+if(exists("conf_matrix_rf_bal")) {
+  cm_bal_rf_df <- as.data.frame(conf_matrix_rf_bal)
+  colnames(cm_bal_rf_df) <- c("Actual", "Predicted", "Count")
+  cm_bal_rf_df$Model_Type <- "Random_Forest"
+  cm_bal_rf_df$Data_Type <- "Testing"
+  cm_bal_rf_df$Phase <- "Balanced"
+  confusion_matrix_data <- rbind(confusion_matrix_data, cm_bal_rf_df)
+}
+
+# 4. Extract from MULTINOMIAL MODELS (Risk Levels)
+if(exists("conf_matrix_multi")) {
+  cm_multi_df <- as.data.frame(conf_matrix_multi)
+  colnames(cm_multi_df) <- c("Actual", "Predicted", "Count")
+  cm_multi_df$Model_Type <- "Multinomial_Logistic"
+  cm_multi_df$Data_Type <- "Testing"
+  cm_multi_df$Phase <- "Risk_Levels"
+  confusion_matrix_data <- rbind(confusion_matrix_data, cm_multi_df)
+}
+
+# 5. If you have training confusion matrices, add them too
+if(exists("cm_train")) {
+  cm_train_df <- as.data.frame(cm_train$table)
+  colnames(cm_train_df) <- c("Predicted", "Actual", "Count")
+  cm_train_df$Model_Type <- "Logistic_Regression"
+  cm_train_df$Data_Type <- "Training"
+  cm_train_df$Phase <- "Final_Model"
+  confusion_matrix_data <- rbind(confusion_matrix_data, cm_train_df)
+}
+
+# Export the comprehensive dataset
+write.csv(confusion_matrix_data, "all_confusion_matrices.csv", row.names = FALSE)
+```
+
+```{r}
+pred <- predict(model4, newdata = thyroid_data)
+print(pred)
+```
